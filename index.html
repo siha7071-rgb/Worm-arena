@@ -1,0 +1,234 @@
+<!DOCTYPE html><html lang="ko"><head><meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<title>WORM ARENA</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{position:fixed;width:100%;height:100%;overflow:hidden;background:#070a10;color:#eaf2ff;font:14px 'Segoe UI','Malgun Gothic',sans-serif;user-select:none;-webkit-user-select:none;touch-action:none}
+canvas{position:fixed;inset:0;width:100%;height:100%}
+.h{display:none!important}
+.scr{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(5,8,14,.72);z-index:20;overflow:auto}
+.pn{background:#111826;border:1px solid #243049;border-radius:16px;padding:22px;width:min(92vw,380px);max-height:92vh;overflow:auto;display:flex;flex-direction:column;gap:12px;text-align:center}
+h1{font-size:38px;letter-spacing:2px;background:linear-gradient(90deg,#7CFFCB,#5AC8FA);-webkit-background-clip:text;background-clip:text;color:transparent}
+.b{padding:12px;border:0;border-radius:10px;background:#243049;color:#eaf2ff;font-size:15px;font-weight:700;cursor:pointer}
+.b.p{background:linear-gradient(135deg,#7CFFCB,#5AC8FA);color:#06110c}
+.row{display:flex;gap:8px;flex-wrap:wrap;justify-content:center;align-items:center}
+.sw{width:32px;height:32px;border-radius:50%;border:3px solid transparent;cursor:pointer}
+.sw.sel{border-color:#fff}.sw{display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:800;color:#111}.sw.lk{opacity:.7}#toast{position:fixed;top:16%;left:50%;transform:translateX(-50%);background:rgba(17,24,38,.92);border:1px solid #2e6b57;padding:10px 16px;border-radius:10px;z-index:40;opacity:0;transition:opacity .3s;pointer-events:none;font-weight:700;white-space:nowrap}#ms{font-size:12px;color:#cfd8e6;margin-top:4px;line-height:1.5}
+.pill{padding:7px 12px;border-radius:20px;background:#1b2538;cursor:pointer;font-size:13px}
+.pill.sel{background:#2e6b57}
+input[type=text]{padding:10px;border-radius:8px;border:1px solid #33425e;background:#0b111c;color:#fff;text-align:center;font-size:15px}
+ol{list-style:none;text-align:left;font-size:13px}
+li{display:flex;gap:8px;padding:4px 6px;border-radius:6px}
+li.me{background:#2e6b57}li span:nth-child(2){flex:1}
+#hud{position:fixed;top:calc(10px + env(safe-area-inset-top));left:calc(12px + env(safe-area-inset-left));font-size:13px;text-shadow:0 1px 4px #000;z-index:5;pointer-events:none}
+#hud b{font-size:24px;color:#7CFFCB}
+#lb{position:fixed;top:54px;right:10px;width:150px;background:rgba(10,14,22,.55);border-radius:10px;padding:6px;font-size:12px;z-index:5;pointer-events:none}
+#gear{position:fixed;top:10px;right:10px;width:38px;height:38px;border-radius:50%;border:0;background:rgba(36,48,73,.85);color:#fff;font-size:18px;z-index:6}
+#jz{position:fixed;left:0;bottom:0;width:55vw;height:70vh;z-index:6;touch-action:none}
+#jb{position:absolute;left:calc(24px + env(safe-area-inset-left));bottom:calc(24px + env(safe-area-inset-bottom));width:120px;height:120px;border-radius:50%;background:rgba(255,255,255,.1);border:2px solid rgba(255,255,255,.25)}
+#jk{position:absolute;left:30px;top:30px;width:60px;height:60px;border-radius:50%;background:rgba(124,255,203,.55)}
+#bb{position:fixed;right:calc(22px + env(safe-area-inset-right));bottom:calc(34px + env(safe-area-inset-bottom));width:92px;height:92px;border-radius:50%;border:0;background:linear-gradient(135deg,#ffd76a,#ff8a3d);color:#2a1400;font-weight:800;z-index:6;touch-action:none}
+.b.r{background:#5a1e24;color:#ffb3b3}@media(max-width:600px),(max-height:500px){#lb{width:118px;font-size:11px}#hud b{font-size:19px}#ms{font-size:11px}#bb{width:78px;height:78px}h1{font-size:30px}.pn{padding:16px;gap:9px}}</style></head><body>
+<canvas id="c"></canvas>
+<div id="hud" class="h">길이 <b id="lv">15</b> · 처치 <b id="kv">0</b> · 🪙<b id="cv" style="color:#ffd76a">0</b> <span id="iv" style="color:#7CFFCB"></span><div id="ms"></div></div><div id="toast"></div>
+<div id="lb" class="h"></div>
+<button id="gear" class="h">⏸</button>
+<div id="jz" class="h"><div id="jb"><div id="jk"></div></div></div>
+<button id="bb" class="h">BOOST</button>
+<div id="menu" class="scr"><div class="pn"><h1>WORM ARENA</h1><div style="color:#8aa0bd;font-size:12px;line-height:1.6">조이스틱으로 이동 · BOOST 누르면 가속 (PC: WASD/방향키 + Space, ESC 일시정지)<br>내 머리가 다른 지렁이의 몸통·머리에 닿으면 사망<br>시작 후 5초간 무적 (무적 중엔 서로 죽일 수 없음)<br>미션·처치로 코인 모아 상점에서 스킨 구매<br>✨ 45초마다 보물 가루 등장 — 화살표를 따라가세요</div><input type="text" id="nm0" maxlength="12" placeholder="닉네임 입력"><button class="b p" id="play">플레이</button><button class="b" id="set">상점 · 꾸미기 · 설정</button><button class="b" id="brd">순위표</button><button class="b" id="fs">⛶ 전체화면 (모바일 추천)</button></div></div>
+<div id="settings" class="scr h"><div class="pn"><b>상점 · 꾸미기 · 설정</b><div>보유 코인 🪙 <b id="sc" style="color:#ffd76a">0</b></div><canvas id="pv" width="260" height="90" style="position:static;width:260px;height:90px;align-self:center"></canvas><div class="row" id="sws"></div><div class="row" id="pats"></div><div class="row" id="eyes"></div><label>게임 속도 <b id="spv"></b><br><input type="range" id="spd" min="0.6" max="1.6" step="0.05" style="width:100%"></label><button class="b p" id="sclose">확인</button><button class="b r" id="reset">전체 재설정 (코인·스킨·순위표·이름)</button></div></div>
+<div id="board" class="scr h"><div class="pn"><b>순위표</b><ol id="bl"></ol><button class="b" id="bclose">닫기</button></div></div>
+<div id="pause" class="scr h"><div class="pn"><h1 style="font-size:30px">일시정지</h1><div style="color:#8aa0bd;font-size:12px">ESC를 다시 누르면 계속</div><button class="b p" id="resume">계속하기</button><button class="b" id="pset">상점 · 꾸미기 · 설정</button><button class="b" id="pmenu">메뉴로 (이번 판 종료)</button></div></div>
+<div id="death" class="scr h"><div class="pn"><h1 style="font-size:28px;background:linear-gradient(90deg,#ff6b6b,#ffa36b);-webkit-background-clip:text;background-clip:text;color:transparent">GAME OVER</h1><div id="ds" style="line-height:1.6"></div>
+<div id="after"><ol id="dl"></ol><div class="row" style="margin-top:10px"><button class="b p" id="retry">다시 시작</button><button class="b" id="tomenu">메뉴</button></div></div></div></div>
+<script>
+(()=>{
+const T=Math.PI*2,R=(a,b)=>a+Math.random()*(b-a),C=(v,a,b)=>v<a?a:v>b?b:v,$=i=>document.getElementById(i);
+const AD=(a,b)=>{let d=(b-a)%T;if(d>Math.PI)d-=T;if(d<-Math.PI)d+=T;return d};
+const esc=s=>String(s).replace(/[&<>"']/g,c=>'&#'+c.charCodeAt(0)+';');
+const MAP=4000,HF=MAP/2,BOTS=30,DUST=1400,BASE=4,BOOST=7;
+const PAL=[['#7CFFCB','#0E6B52'],['#5AC8FA','#0F4C81'],['#C58CFF','#5B2E8C'],['#FF8A7A','#8C2E24'],['#FFD76A','#8C6A0E'],['#FF7EC8','#8C2C63'],['#B6FF5A','#3F7A12'],['#E6F0FF','#5C6F8C']];
+const PATS=[['gradient','그라데이션',0],['stripe','줄무늬',150],['dot','점박이',150]],EYES=[['normal','기본',0],['big','왕눈이',120],['angry','화난눈',120]],CP=[0,100,100,150,150,200,200,300];
+const MS=[['가루 50개 먹기',p=>p.ea>=50,20],['길이 50 달성',p=>p.m>=50,30],['길이 100 달성',p=>p.m>=100,60],['1마리 처치',p=>p.k>=1,40],['3마리 처치',p=>p.k>=3,100],['60초 생존',p=>p.age>=60,30],['180초 생존',p=>p.age>=180,80]];
+const NAMES='O크크 거제야호 파라파라 좋~다 왜요쌤 캐치캐치 그르르갉 말아주는중 쳐들어간다 럭키비키 딜룰루 스키비디 킹받네 꿈틀이 GreenGreen Rizz Aura Sigma Delulu NPC Mewing GOAT NoCap Lowkey SixSeven Brainrot Slay Bussin MainChar Vibe Cooked Yapper Glazer Skibidi Aura+1000'.split(' ');
+const PC=['#8be9ff','#ffb3d9','#b6ff8c','#ffe08a','#c9a6ff','#ff9e9e'];
+let S={color:0,pat:'gradient',eyes:'normal',speed:1,name:'',coins:0,own:null};
+try{Object.assign(S,JSON.parse(localStorage.getItem('wa.s')))}catch(e){}
+S.own=Object.assign({c:[0],p:['gradient'],e:['normal']},S.own||{});if(!S.own.c.includes(S.color))S.color=0;if(!S.own.p.includes(S.pat))S.pat='gradient';if(!S.own.e.includes(S.eyes))S.eyes='normal';S.coins=S.coins|0;
+const save=()=>{try{localStorage.setItem('wa.s',JSON.stringify(S))}catch(e){}};
+const getB=()=>{try{return JSON.parse(localStorage.getItem('wa.b'))||[]}catch(e){return[]}};
+const rgb=h=>{const v=parseInt(h.slice(1),16);return[v>>16,v>>8&255,v&255]};
+const LUT=PAL.map(([a,b])=>{const A=rgb(a),B=rgb(b),o=[],d=[];for(let i=0;i<16;i++){const t=i/15,c=A.map((v,k)=>v+(B[k]-v)*t);o.push(`rgb(${c})`);d.push(`rgb(${c.map(v=>v*.6|0)})`)}return{o,d}});
+
+// === 지렁이 그리기 (게임/미리보기 공용) ===
+function worm(c,g,n,r,sk,ang,look,inv,bo,t,vw){
+ const L=LUT[sk.c],dn=Math.max(1,n-1);
+ if(bo){c.globalAlpha=.15;c.fillStyle=PAL[sk.c][0];for(let i=0;i<n;i+=3){c.beginPath();c.arc(g[i].x,g[i].y,r*1.5,0,T);c.fill()}}
+ c.globalAlpha=inv>0?.6+.4*Math.sin(t*16):1;
+ for(let i=n-1;i>=0;i--){const s=g[i];if(vw&&(s.x<vw[0]||s.x>vw[2]||s.y<vw[1]||s.y>vw[3]))continue;
+  const k=Math.min(15,(i/dn*16)|0),sr=r*(1-.3*i/dn);
+  c.fillStyle=sk.p==='stripe'&&i%8<4?L.d[k]:L.o[k];c.beginPath();c.arc(s.x,s.y,sr,0,T);c.fill();
+  if(sk.p==='dot'&&i%5==2){c.fillStyle=L.d[k];c.beginPath();c.arc(s.x,s.y,sr*.4,0,T);c.fill()}}
+ const h=g[0],er=r*(sk.e==='big'?.42:.3),cs=Math.cos(ang),sn=Math.sin(ang);
+ for(const d of[-1,1]){const ex=h.x+cs*r*.45-sn*r*.55*d,ey=h.y+sn*r*.45+cs*r*.55*d;
+  c.fillStyle='#fff';c.beginPath();c.arc(ex,ey,er,0,T);c.fill();
+  c.fillStyle='#0a0e14';c.beginPath();c.arc(ex+Math.cos(look)*er*.35,ey+Math.sin(look)*er*.35,er*.55,0,T);c.fill();
+  if(sk.e==='angry'){c.strokeStyle='#0a0e14';c.lineWidth=er*.45;c.beginPath();c.moveTo(ex+cs*er*1.1-sn*er*1.1*d,ey+sn*er*1.1+cs*er*1.1*d);c.lineTo(ex-cs*.2*er+sn*er*d,ey-sn*.2*er-cs*er*d);c.stroke()}}
+ if(inv>0){c.globalAlpha=1;c.strokeStyle='rgba(124,255,203,.85)';c.lineWidth=r*.2;c.beginPath();c.arc(h.x,h.y,r*1.9+Math.sin(t*8)*r*.12,0,T);c.stroke()}
+ c.globalAlpha=1}
+
+// === 월드 상태 ===
+let snakes=[],foods=[],parts=[],resp=[],P=null,state='menu',paused=false,dust=0,time=0,shake=0,dyT=0,tre=null,treT=20;
+const vib=ms=>{try{navigator.vibrate&&navigator.vibrate(ms)}catch(e){}};
+const cam={x:0,y:0,z:1};
+const orb=(x,y,v,c,r)=>foods.push({x,y,v,r:r||2.5+Math.sqrt(v)*2.5,c:PAL[c][0],o:1,life:90,tw:R(0,6)});
+function dustGroup(){const cx=R(-HF+80,HF-80),cy=R(-HF+80,HF-80);for(let i=R(3,7)|0;i>0;i--){foods.push({x:cx+R(-45,45),y:cy+R(-45,45),v:R(.25,.55),r:R(2.6,4.4),c:PC[R(0,6)|0],o:0,life:1e9,tw:R(0,6)});dust++}}
+function spawnPos(){let best=[0,0],bd=-1;for(let k=0;k<10;k++){const x=R(-HF+300,HF-300),y=R(-HF+300,HF-300);let m=1e9;for(const s of snakes)for(let i=0;i<s.n;i+=3)m=Math.min(m,Math.hypot(s.segs[i].x-x,s.segs[i].y-y));if(m>bd){bd=m;best=[x,y]}if(m>350)break}return best}
+
+class Sn{
+ constructor(x,y,sk,name,pl){Object.assign(this,{x,y,sk,name,pl,a:R(0,T),m:pl?15:R(12,40),segs:[],n:0,inv:pl?5:3,k:0,age:0,bo:0,want:false,bt:0,th:R(0,.2),ag:R(.25,.6),cd:R(2,6),hunt:0,dead:false,ea:0,cn:0,done:{},st:0,lk:-9});
+  this.tg=this.a;this.wd=this.a;this.pk=this.m;this.r=this.rad();this.gap=this.r*.5;this.fit();
+  this.segs.forEach((s,i)=>{s.x=x-Math.cos(this.a)*i*this.gap;s.y=y-Math.sin(this.a)*i*this.gap})}
+ rad(){return C(7+Math.sqrt(this.m)*1.5,7,40)}
+ fit(){this.n=Math.floor(8+this.m*.55);const g=this.segs,t=g[g.length-1]||{x:this.x,y:this.y};while(g.length<this.n)g.push({x:t.x,y:t.y,o:this,i:g.length});g.length=this.n}
+ up(st,dt){
+  this.r+=(this.rad()-this.r)*Math.min(1,.08*st);this.gap=Math.max(4,this.r*.5);
+  const mx=.085*st*C(1.15-(this.r-12)/70,.5,1.15);this.a+=C(AD(this.a,this.tg)*.6,-mx,mx);
+  const bo=this.want&&this.m>11;this.bo=bo;
+  if(bo){this.bt+=dt;if(this.bt>=.5){this.bt-=.5;this.m-=1;const t=this.segs[this.segs.length-1];orb(t.x,t.y,.5,this.sk.c,3.5)}}else this.bt=0;
+  const sl=this.m>40?1-Math.min(.2,(this.m-40)/10*.005):1,v=(bo?BOOST:BASE)*sl*st;
+  this.x=C(this.x+Math.cos(this.a)*v,-HF+this.r,HF-this.r);this.y=C(this.y+Math.sin(this.a)*v,-HF+this.r,HF-this.r);
+  if(this.inv>0)this.inv-=dt;this.age+=dt;this.pk=Math.max(this.pk,this.m);
+  this.fit();const g=this.segs;g[0].x=this.x;g[0].y=this.y;
+  for(let i=1;i<this.n;i++){const p=g[i-1],q=g[i],dx=p.x-q.x,dy=p.y-q.y,d=Math.hypot(dx,dy);if(d>this.gap){const k=(d-this.gap)/d;q.x+=dx*k;q.y+=dy*k}}}
+}
+function addBot(){const[x,y]=spawnPos(),used=snakes.map(s=>s.name);let nm,tries=0;do nm=NAMES[R(0,NAMES.length)|0];while(used.includes(nm)&&tries++<20);
+ snakes.push(new Sn(x,y,{c:R(0,8)|0,p:PATS[R(0,3)|0][0],e:EYES[R(0,3)|0][0]},nm,false))}
+
+// === 사망 / 충돌 (내 머리가 남의 몸통·머리에 닿을 때만 사망, 자기 몸은 무시) ===
+function kill(s,by){if(s.dead)return;s.dead=true;if(by&&by!==s){by.k++;if(by===P&&!P.dead){const n=P.st=time-P.lk<4?P.st+1:1;P.lk=time;S.coins+=5;P.cn+=5;save();vib(40);toast(`${n>4?'미쳤다!':['','처치!','더블킬!','트리플킬!','쿼드라킬!'][n]} ${s.name} +5🪙`)}}
+ const n=C(Math.round(s.m/1.2),8,90),v=s.m*.75/n;for(let i=0;i<n;i++){const g=s.segs[(i*s.n/n)|0];orb(g.x+R(-15,15),g.y+R(-15,15),v,s.sk.c)}
+ for(let i=0;i<16;i++)parts.push({x:s.x,y:s.y,vx:R(-4,4),vy:R(-4,4),l:1,c:PAL[s.sk.c][0]});
+ if(s===P){vib(200);state='dying';dyT=3;P.by=by&&by.name}else resp.push(R(3,5))}
+function collide(){const ds=[];
+ for(const s of snakes){if(s.inv>0)continue;
+  out:for(const o of snakes){if(o===s||o.inv>0)continue;
+   if(Math.hypot(s.x-o.x,s.y-o.y)>o.n*o.gap+s.r+o.r+20)continue;
+   if(Math.hypot(s.x-o.x,s.y-o.y)<(s.r+o.r)*.75){const mx=(s.x+o.x)/2,my=(s.y+o.y)/2,fs=(Math.cos(s.a)*(mx-s.x)+Math.sin(s.a)*(my-s.y))/s.r,fo=(Math.cos(o.a)*(mx-o.x)+Math.sin(o.a)*(my-o.y))/o.r;
+    const lose=Math.abs(fs-fo)>.05?(fs>fo?s:o):(s.m<o.m||(s.m===o.m&&s.name<o.name)?s:o);ds.push(lose===s?[s,o]:[o,s]);continue}
+   for(let i=1;i<o.n;i++){const g=o.segs[i];if(Math.hypot(s.x-g.x,s.y-g.y)<s.r*.6+o.r*(1-.3*i/o.n)*.75){ds.push([s,o]);break out}}}}
+ for(const[a,b]of ds)kill(a,b)}
+function eat(s,st){const M=s.r*2.2+30,E=s.r*.9+3;for(const f of foods){if(f.dead)continue;const dx=s.x-f.x,dy=s.y-f.y;if(Math.abs(dx)>M||Math.abs(dy)>M)continue;const d=Math.hypot(dx,dy);
+ if(d<E){f.dead=1;s.m+=f.v;if(!f.o)dust--;if(s===P)P.ea++}else if(d<M){const m=Math.min(d,(3+(M-d)/M*6)*st);f.x+=dx/d*m;f.y+=dy/d*m}}}
+
+// === AI (먹이 탐색 / 위협 회피 / 사냥 / 몸통 회피) ===
+function danger(b,a){let d=0;for(const L of[b.r*2+50,b.r*4+120]){const x=b.x+Math.cos(a)*L,y=b.y+Math.sin(a)*L;if(Math.abs(x)>HF-30||Math.abs(y)>HF-30)d+=6;
+ for(const o of snakes){if(o===b||Math.hypot(o.x-x,o.y-y)>o.n*o.gap+150)continue;const th=o.r+b.r*.7+15;for(let i=0;i<o.n;i+=2){const g=o.segs[i];if(Math.hypot(g.x-x,g.y-y)<th){d+=L<b.r*3?8:4;break}}}}return d}
+function think(b){b.th=R(.1,.2);let g,bo=false,tt=null,td=1e9,pr=null,pd=1e9;
+ for(const s of snakes){if(s===b||s.inv>0)continue;const d=Math.hypot(s.x-b.x,s.y-b.y);if(s.m>b.m*1.2||(d<160&&Math.abs(AD(s.a,Math.atan2(b.y-s.y,b.x-s.x)))<.5)){if(d<300&&d<td){tt=s;td=d}}else if(s.m<b.m*.9&&d<420&&d<pd){pr=s;pd=d}}
+ b.cd-=.15;if(pr&&b.hunt<=0&&b.cd<=0&&Math.random()<b.ag*.05){b.hunt=R(1.5,3);b.cd=R(5,9)}if(!pr)b.hunt=0;b.hunt-=.15;
+ if(Math.abs(b.x)>HF-240||Math.abs(b.y)>HF-240)g=Math.atan2(-b.y,-b.x);
+ else if(tt){g=Math.atan2(b.y-tt.y,b.x-tt.x);bo=td<140&&b.m>13}
+ else if(b.hunt>0&&pr){const l=C(pd*.6,70,300);g=Math.atan2(pr.y+Math.sin(pr.a)*l-b.y,pr.x+Math.cos(pr.a)*l-b.x);bo=pd<150&&b.m>20}
+ else{let bs=0,bf=null;for(const f of foods){const dx=f.x-b.x,dy=f.y-b.y;if(Math.abs(dx)>500||Math.abs(dy)>500)continue;const sc=(f.v+.25)/(Math.hypot(dx,dy)+40);if(sc>bs){bs=sc;bf=f}}
+  if(bf)g=Math.atan2(bf.y-b.y,bf.x-b.x);else{b.wd+=R(-.4,.4);g=b.wd}}
+ let best=g,bs=1e9;for(const o of[0,.35,-.35,.75,-.75,1.3,-1.3,2,-2,2.7]){const sc=Math.abs(o)+danger(b,g+o);if(sc<bs){bs=sc;best=g+o}}
+ b.tg=best;b.want=bo}
+
+// === 입력: 조이스틱 / 부스트 / 키보드 ===
+const jz=$('jz'),jb=$('jb'),jk=$('jk'),jy={on:0,a:0,m:0,cx:0,cy:0};let bst=false;const K={};
+function jm(e){const dx=e.clientX-jy.cx,dy=e.clientY-jy.cy,k=Math.min(Math.hypot(dx,dy),50);jy.a=Math.atan2(dy,dx);jy.m=k/50;jk.style.left=30+Math.cos(jy.a)*k+'px';jk.style.top=30+Math.sin(jy.a)*k+'px'}
+jz.onpointerdown=e=>{jz.setPointerCapture(e.pointerId);const r=jz.getBoundingClientRect(),x=C(e.clientX-r.left,60,r.width-60),y=C(e.clientY-r.top,60,r.height-60);jb.style.left=x-60+'px';jb.style.top=y-60+'px';jb.style.bottom='auto';jy.cx=r.left+x;jy.cy=r.top+y;jy.on=1;jm(e)};
+jz.onpointermove=e=>{if(jy.on)jm(e)};
+jz.onpointerup=jz.onpointercancel=()=>{jy.on=0;jy.m=0;jb.style.left=jb.style.top=jb.style.bottom='';jk.style.left=jk.style.top='30px'};
+const bE=$('bb');bE.onpointerdown=e=>{bst=true;bE.setPointerCapture(e.pointerId)};bE.onpointerup=bE.onpointercancel=()=>{bst=false};
+const kn=e=>e.key.length<2?e.key.toLowerCase():e.key;
+window.onkeydown=e=>{if(e.key==='Escape'){if(!$('settings').classList.contains('h'))$('sclose').onclick();else if(state==='playing')setPause(!paused);return}if(e.target.tagName==='INPUT'){if(e.key==='Enter'&&state==='menu')start();return}K[kn(e)]=1;if(e.key.startsWith('Arrow')||e.key===' ')e.preventDefault()};window.onkeyup=e=>{K[kn(e)]=0};
+document.oncontextmenu=e=>e.preventDefault();
+document.addEventListener('gesturestart',e=>e.preventDefault());
+document.addEventListener('touchmove',e=>{if(!e.target.closest('.pn'))e.preventDefault()},{passive:false});
+
+// === 시뮬레이션 ===
+function sim(dt){const st=dt*60*S.speed;time+=dt;
+ let w=0,gc=0;for(const f of foods){f.life-=dt;if(!f.dead&&f.life>0){foods[w++]=f;if(f.g)gc++}}foods.length=w;if(!gc)tre=null;
+ if(P&&!P.dead){if(jy.on&&jy.m>.1)P.tg=jy.a;else{const kx=(K.d||K.ArrowRight?1:0)-(K.a||K.ArrowLeft?1:0),ky=(K.s||K.ArrowDown?1:0)-(K.w||K.ArrowUp?1:0);if(kx||ky)P.tg=Math.atan2(ky,kx)}P.want=bst||!!K[' ']}
+ for(const s of snakes)if(!s.pl){s.th-=dt;if(s.th<=0)think(s)}
+ for(const s of snakes)s.up(st,dt);
+ for(const s of snakes)eat(s,st);
+ collide();snakes=snakes.filter(s=>!s.dead);
+ resp=resp.map(t=>t-dt).filter(t=>t>0||(addBot(),false));
+ for(let i=0;i<2&&dust<DUST;i++)dustGroup();
+ if((treT-=dt)<=0){treT=45;const x=R(-HF+300,HF-300),y=R(-HF+300,HF-300);tre={x,y};for(let i=0;i<22;i++){const a=R(0,T),d=R(0,90);foods.push({x:x+Math.cos(a)*d,y:y+Math.sin(a)*d,v:2,r:7,c:'#FFD700',o:1,g:1,life:60,tw:R(0,6)})}if(state==='playing'){toast('✨ 보물 가루 등장! 화살표를 따라가세요');vib(80)}}
+ for(const p of parts){p.x+=p.vx;p.y+=p.vy;p.l-=.03}parts=parts.filter(p=>p.l>0);
+ if(state==='dying'&&(dyT-=dt)<=0)death();
+ const t=P&&!P.dead?P:(state==='menu'?snakes.reduce((a,b)=>!a||b.m>a.m?b:a,null):null);
+ if(t){cam.x+=(t.x-cam.x)*.15;cam.y+=(t.y-cam.y)*.15;cam.z+=(C(Math.min(innerWidth,innerHeight)/760,.65,1.25)*C(1.05-(t.r-12)*.016,.52,1.05)-cam.z)*.05}}
+
+// === 렌더 ===
+const cv=$('c'),X=cv.getContext('2d');let W,H,dpr;
+function rs(){dpr=Math.min(2,window.devicePixelRatio||1);W=innerWidth;H=innerHeight;cv.width=W*dpr;cv.height=H*dpr}window.onresize=rs;rs();
+function draw(){X.setTransform(dpr,0,0,dpr,0,0);X.fillStyle='#070a10';X.fillRect(0,0,W,H);
+ const z=cam.z;
+ X.save();X.translate(W/2,H/2);X.scale(z,z);X.translate(-cam.x,-cam.y);
+ const vw=[cam.x-W/2/z-60,cam.y-H/2/z-60,cam.x+W/2/z+60,cam.y+H/2/z+60];
+ X.fillStyle='#0b1019';X.fillRect(-HF,-HF,MAP,MAP);
+ X.strokeStyle='rgba(120,160,220,.07)';X.lineWidth=1/z;X.beginPath();
+ for(let x=Math.max(-HF,Math.floor(vw[0]/100)*100);x<=Math.min(HF,vw[2]);x+=100){X.moveTo(x,Math.max(-HF,vw[1]));X.lineTo(x,Math.min(HF,vw[3]))}
+ for(let y=Math.max(-HF,Math.floor(vw[1]/100)*100);y<=Math.min(HF,vw[3]);y+=100){X.moveTo(Math.max(-HF,vw[0]),y);X.lineTo(Math.min(HF,vw[2]),y)}
+ X.stroke();
+ X.strokeStyle='rgba(255,70,70,.75)';X.lineWidth=8;X.shadowColor='#ff3c3c';X.shadowBlur=30;X.strokeRect(-HF,-HF,MAP,MAP);X.shadowBlur=0;
+ for(const f of foods){if(f.x<vw[0]||f.x>vw[2]||f.y<vw[1]||f.y>vw[3])continue;const p=f.r*(1+.15*Math.sin(time*3+f.tw));X.fillStyle=f.c;X.globalAlpha=.25;X.beginPath();X.arc(f.x,f.y,p*(f.o?2.4:2),0,T);X.fill();X.globalAlpha=1;X.beginPath();X.arc(f.x,f.y,p,0,T);X.fill()}
+ const ord=[...snakes].sort((a,b)=>a.m-b.m);
+ for(const s of ord)worm(X,s.segs,s.n,s.r,s.sk,s.a,s.tg,s.inv,s.bo,time,vw);
+ X.font=`${12/z}px sans-serif`;X.textAlign='center';X.fillStyle='rgba(255,255,255,.8)';
+ for(const s of ord)if(s.x>vw[0]&&s.x<vw[2]&&s.y>vw[1]&&s.y<vw[3])X.fillText(s.name,s.x,s.y-s.r-8/z);
+ for(const p of parts){X.globalAlpha=Math.max(0,p.l);X.fillStyle=p.c;X.beginPath();X.arc(p.x,p.y,4,0,T);X.fill()}X.globalAlpha=1;
+ X.restore();
+ if(tre&&P&&!P.dead){const dx=tre.x-cam.x,dy=tre.y-cam.y;if(Math.abs(dx)*z>W/2-20||Math.abs(dy)*z>H/2-20){const a=Math.atan2(dy,dx),rr=Math.min(W,H)/2-50,ax=W/2+Math.cos(a)*rr,ay=H/2+Math.sin(a)*rr;
+  X.save();X.translate(ax,ay);X.rotate(a);X.fillStyle='#FFD700';X.shadowColor='#FFD700';X.shadowBlur=12;X.beginPath();X.moveTo(18,0);X.lineTo(-10,-12);X.lineTo(-4,0);X.lineTo(-10,12);X.closePath();X.fill();X.restore();
+  X.fillStyle='#FFD700';X.font='bold 11px sans-serif';X.textAlign='center';X.fillText((Math.hypot(dx,dy)/10|0)+'m',ax,ay+26)}}}
+const PX=$('pv').getContext('2d'),pvs=Array.from({length:18},()=>({x:0,y:0}));
+function pvDraw(){const t=performance.now()/1e3;PX.clearRect(0,0,260,90);pvs.forEach((s,i)=>{s.x=230-i*10;s.y=45+Math.sin(t*3+i*.5)*9});worm(PX,pvs,18,15,{c:S.color,p:S.pat,e:S.eyes},0,0,0,0,t)}
+
+// === UI ===
+function setPause(v){if(state!=='playing')return;paused=v;$('pause').classList.toggle('h',!v)}
+function ui(){if(state!=='playing'){$('pause').classList.add('h');paused=false}const pl=state==='playing'||state==='dying';[['hud',pl],['lb',pl],['gear',pl],['jz',pl],['bb',pl],['menu',state==='menu'],['death',state==='dead']].forEach(([i,v])=>$(i).classList.toggle('h',!v))}
+let hT=0;
+function toast(m){const t=$('toast');t.textContent=m;t.style.opacity=1;clearTimeout(toast.h);toast.h=setTimeout(()=>t.style.opacity=0,1800)}
+function chkM(){MS.forEach(([n,f,c],i)=>{if(!P.done[i]&&f(P)){P.done[i]=1;S.coins+=c;P.cn+=c;save();vib(60);toast(`미션 완료! ${n} +${c}🪙`)}})}
+function hud(dt){hT+=dt;if(hT<.2)return;hT=0;if(!(state==='playing'||state==='dying'))return;chkM();
+ $('lv').textContent=P.m|0;$('kv').textContent=P.k;$('cv').textContent=S.coins;$('iv').textContent=P.inv>0?'무적 '+P.inv.toFixed(1)+'s':'';
+ $('ms').innerHTML=MS.map((m,i)=>P.done[i]?'':'□ '+m[0]+' (+'+m[2]+')').filter(Boolean).slice(0,3).join('<br>');
+ const top=[...snakes].sort((a,b)=>b.m-a.m),rk=top.indexOf(P),row=(s,i)=>`<div style="color:${s===P?'#7CFFCB':'#cfd8e6'}">${i+1}. ${esc(s.name)}<span style="float:right">${s.m|0}</span></div>`;
+ $('lb').innerHTML=top.slice(0,5).map(row).join('')+(rk>4?row(P,rk):'')}
+function start(){S.name=($('nm0').value.trim()||S.name||'지렁이').slice(0,12);$('nm0').value=S.name;save();const[x,y]=spawnPos();P=new Sn(x,y,{c:S.color,p:S.pat,e:S.eyes},S.name,true);snakes.push(P);cam.x=x;cam.y=y;state='playing';ui()}
+function death(){state='dead';ui();chkM();P.sc=Math.round(P.pk)*10+P.k*100;
+ const b=getB(),e={n:S.name||'지렁이',s:P.sc,l:Math.round(P.pk),k:P.k,t:Date.now()};b.push(e);b.sort((x,y)=>y.s-x.s);try{localStorage.setItem('wa.b',JSON.stringify(b.slice(0,20)))}catch(x){}
+ $('ds').innerHTML=`점수 <b style="color:#ff9d3d;font-size:22px">${P.sc}</b><br>최대 길이 ${P.pk|0} · 처치 ${P.k} · 생존 ${P.age|0}초<br>이번 판 코인 +${P.cn}🪙 (보유 ${S.coins})${P.by?`<br>${esc(P.by)}에게 당함`:''}`;rb($('dl'),e.t)}
+function rb(el,ts){el.innerHTML=getB().slice(0,10).map((e,i)=>`<li class="${e.t===ts?'me':''}"><span>${i+1}</span><span>${esc(e.n)}</span><span>${e.s}점</span><span style="color:#8aa0bd">${e.l}·${e.k}킬</span></li>`).join('')||'<li>기록이 없습니다</li>'}
+$('retry').onclick=start;$('tomenu').onclick=()=>{state='menu';ui()};$('play').onclick=start;
+$('brd').onclick=()=>{rb($('bl'),0);$('board').classList.remove('h')};$('bclose').onclick=()=>$('board').classList.add('h');
+function bs(){$('sc').textContent=S.coins;
+ const f=(id,arr,key,ok,val,pr,fn)=>{const e=$(id);e.innerHTML='';arr.forEach((it,i)=>{const v=val(it,i),p=pr(it,i),has=S.own[ok].includes(v),d=document.createElement('div');fn(d,it,i,has,p);if(S[key]===v)d.classList.add('sel');
+  d.onclick=()=>{if(!has){if(S.coins<p)return toast(`코인이 부족해요 (${p}🪙 필요)`);S.coins-=p;S.own[ok].push(v);toast('구매 완료!')}S[key]=v;save();bs()};e.appendChild(d)})};
+ f('sws',PAL,'color','c',(it,i)=>i,(it,i)=>CP[i],(d,it,i,has,p)=>{d.className='sw'+(has?'':' lk');d.style.background=`linear-gradient(135deg,${it[0]},${it[1]})`;if(!has)d.textContent=p});
+ f('pats',PATS,'pat','p',it=>it[0],it=>it[2],(d,it,i,has,p)=>{d.className='pill';d.textContent=it[1]+(has?'':` 🔒${p}`)});
+ f('eyes',EYES,'eyes','e',it=>it[0],it=>it[2],(d,it,i,has,p)=>{d.className='pill';d.textContent=it[1]+(has?'':` 🔒${p}`)});
+ $('spd').value=S.speed;$('spv').textContent=S.speed.toFixed(2)+'x'}
+$('spd').oninput=e=>{S.speed=+e.target.value;save();$('spv').textContent=S.speed.toFixed(2)+'x'};
+$('set').onclick=()=>{bs();$('settings').classList.remove('h')};
+$('gear').onclick=()=>setPause(true);$('resume').onclick=()=>setPause(false);
+$('pset').onclick=()=>{$('pause').classList.add('h');bs();$('settings').classList.remove('h')};
+$('pmenu').onclick=()=>{P.dead=true;snakes=snakes.filter(s=>s!==P);state='menu';ui()};
+$('fs').onclick=()=>{const d=document.documentElement,f=d.requestFullscreen||d.webkitRequestFullscreen;if(f){const r=f.call(d);if(r&&r.then)r.then(()=>{try{screen.orientation.lock('landscape').catch(()=>{})}catch(e){}}).catch(()=>{})}else toast('이 브라우저는 전체화면을 지원하지 않아요')};
+$('reset').onclick=()=>{if(!confirm('코인, 구매한 스킨, 순위표, 이름, 설정이 모두 초기화됩니다. 진행할까요?'))return;try{localStorage.removeItem('wa.s');localStorage.removeItem('wa.b')}catch(e){}
+ Object.assign(S,{color:0,pat:'gradient',eyes:'normal',speed:1,name:'',coins:0,own:{c:[0],p:['gradient'],e:['normal']}});$('nm0').value='';if(P&&!P.dead)P.sk={c:0,p:'gradient',e:'normal'};bs();toast('전체 재설정 완료')};
+$('sclose').onclick=()=>{$('settings').classList.add('h');if(state==='playing'&&paused)$('pause').classList.remove('h');if(P&&!P.dead)P.sk={c:S.color,p:S.pat,e:S.eyes};$('settings').classList.add('h')};
+
+// === 메인 루프 ===
+let last=0;
+function loop(now){requestAnimationFrame(loop);const dt=Math.min(.05,(now-last)/1e3||0);last=now;
+ if(!paused)sim(dt);draw();if(!$('settings').classList.contains('h'))pvDraw();hud(dt)}
+$('nm0').value=S.name;bs();ui();for(let i=0;i<BOTS;i++)addBot();while(dust<DUST)dustGroup();requestAnimationFrame(loop);
+})();
+</script></body></html>
